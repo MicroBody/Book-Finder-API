@@ -26,43 +26,47 @@ run().catch(console.dir);
 
 const router = express.Router();
 
-// Require necessary modules
+// Import necessary modules
 const express = require('express');
 const mongoose = require('mongoose');
 
-// Connect to MongoDB database
-mongoose.connect('mongodb://localhost/booksDB', { useNewUrlParser: true, useUnifiedTopology: true });
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost/booksAPI', { useNewUrlParser: true, useUnifiedTopology: true });
+const db = mongoose.connection;
 
-// Create a schema for the book model
+// Create Book Schema
 const bookSchema = new mongoose.Schema({
   title: String,
   author: String,
   genre: String,
   releaseDate: Date,
-  description: String,
-  rating: Number
+  information: String,
+  ratings: Number
 });
 
-// Create a model based on the schema
+// Create Book Model
 const Book = mongoose.model('Book', bookSchema);
 
-// Create an Express application
+// Create Express App
 const app = express();
+app.use(express.json());
 
-// Define routes for creating and getting books
-app.post('/books', async (req, res) => {
-  const { title, author, genre, releaseDate, description, rating } = req.body;
-  const book = new Book({ title, author, genre, releaseDate, description, rating });
-  await book.save();
-  res.send(book);
-});
-
+// Create API Endpoints
+// Get all books
 app.get('/books', async (req, res) => {
   const books = await Book.find();
-  res.send(books);
+  res.json(books);
+});
+
+// Add a new book
+app.post('/books', async (req, res) => {
+  const newBook = new Book(req.body);
+  await newBook.save();
+  res.json(newBook);
 });
 
 // Start the server
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
