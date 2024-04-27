@@ -1,0 +1,68 @@
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const uri = "mongodb+srv://fakej2924:uLEqnF3fXu80M2li@cluster0.i1tetn4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+async function run() {
+  try {
+    // Connect the client to the server	(optional starting in v4.7)
+    await client.connect();
+    // Send a ping to confirm a successful connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await client.close();
+  }
+}
+run().catch(console.dir);
+
+const router = express.Router();
+
+// Require necessary modules
+const express = require('express');
+const mongoose = require('mongoose');
+
+// Connect to MongoDB database
+mongoose.connect('mongodb://localhost/booksDB', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Create a schema for the book model
+const bookSchema = new mongoose.Schema({
+  title: String,
+  author: String,
+  genre: String,
+  releaseDate: Date,
+  description: String,
+  rating: Number
+});
+
+// Create a model based on the schema
+const Book = mongoose.model('Book', bookSchema);
+
+// Create an Express application
+const app = express();
+
+// Define routes for creating and getting books
+app.post('/books', async (req, res) => {
+  const { title, author, genre, releaseDate, description, rating } = req.body;
+  const book = new Book({ title, author, genre, releaseDate, description, rating });
+  await book.save();
+  res.send(book);
+});
+
+app.get('/books', async (req, res) => {
+  const books = await Book.find();
+  res.send(books);
+});
+
+// Start the server
+app.listen(3000, () => {
+  console.log('Server is running on port 3000');
+});
